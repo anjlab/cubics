@@ -1,7 +1,14 @@
 package anjlab.cubics.test;
 
-public class Fact {
+import java.io.Serializable;
 
+public class Fact implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2613259021962974160L;
+	
 	private int year;
 	private int month;
 	private int day;

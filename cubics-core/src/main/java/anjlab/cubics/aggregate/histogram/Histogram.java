@@ -1,5 +1,6 @@
 package anjlab.cubics.aggregate.histogram;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,8 +9,13 @@ import java.util.Map;
 import anjlab.cubics.DataCollector;
 import anjlab.cubics.JSONSerializable;
 
-public class Histogram implements DataCollector<Range>, JSONSerializable {
+public class Histogram implements DataCollector<Range>, JSONSerializable, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -9174472731559232821L;
+	
 	private Map<Range, Integer> data = new HashMap<Range, Integer>();
 	private Range[] ranges;
 	private int others;

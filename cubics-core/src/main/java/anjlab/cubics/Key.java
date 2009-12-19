@@ -1,12 +1,19 @@
 package anjlab.cubics;
 
+import java.io.Serializable;
+
 /**
  * Represents hierarchy key within dimension.
  * 
  * @author dmitrygusev
  *
  */
-public class Key {
+public class Key implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8698993053298385675L;
+
 	private String key;
 	
 	private Object[] parentPath;

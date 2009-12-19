@@ -1,5 +1,6 @@
 package anjlab.cubics;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,16 +13,27 @@ import java.util.Map;
  *
  * @param <T> Type of the POJO class.
  */
-public class BeanClass<T> {
+public class BeanClass<T> implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5493839842292837419L;
+	
 	private Class<T> beanClass;
-	private Map<String, Method> methods;
+	private transient Map<String, Method> methods;
 	
 	public BeanClass(Class<T> beanClass) {
 		this.beanClass = beanClass;
-		readMethods();
 	}
 
+	private Map<String, Method> getMethods() {
+		if (methods == null) {
+			readMethods();
+		}
+		return methods;
+	}
+	
 	private void readMethods() {
 		this.methods = new HashMap<String, Method>();
 		for (Method method : beanClass.getMethods()) {
@@ -41,7 +53,7 @@ public class BeanClass<T> {
 
 	public Object getValue(String property, T instance) {
 		try {
-			return methods.get(property.toLowerCase()).invoke(instance);
+			return getMethods().get(property.toLowerCase()).invoke(instance);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

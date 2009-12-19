@@ -1,11 +1,18 @@
 package anjlab.cubics.aggregate.histogram;
 
+import java.io.Serializable;
+
 import anjlab.cubics.Aggregate;
 import anjlab.cubics.CustomAggregate;
 
 
-public class HistogramAggregate<T> implements CustomAggregate<T> {
-		
+public class HistogramAggregate<T> implements CustomAggregate<T>, Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6304099435196589610L;
+	
 	private Histogram histogram;
 	
 	public HistogramAggregate(double start, double step, double end) {

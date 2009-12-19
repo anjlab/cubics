@@ -1,11 +1,18 @@
 package anjlab.cubics.aggregate.pie;
 
+import java.io.Serializable;
+
 import anjlab.cubics.Coercer;
 import anjlab.cubics.CustomAggregate;
 import anjlab.cubics.CustomAggregateFactory;
 
-public class PieAggregateFactory<T> implements CustomAggregateFactory<T> {
+public class PieAggregateFactory<T> implements CustomAggregateFactory<T>, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1305840793258529875L;
+	
 	private Coercer<?> coercer;
 
 	public PieAggregateFactory(Coercer<?> coercer) {

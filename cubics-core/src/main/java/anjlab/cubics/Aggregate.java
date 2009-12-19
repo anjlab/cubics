@@ -1,5 +1,6 @@
 package anjlab.cubics;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -17,7 +18,12 @@ import java.util.Map;
  * @param <T>
  *            Type of the fact bean.
  */
-public class Aggregate<T> {
+public class Aggregate<T> implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3880336888204291753L;
 	
 	/**	
 	 * Built-in aggregate names.

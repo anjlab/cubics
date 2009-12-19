@@ -1,5 +1,6 @@
 package anjlab.cubics.aggregate.pie;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,8 +11,13 @@ import anjlab.cubics.Coercer;
 import anjlab.cubics.DataCollector;
 import anjlab.cubics.JSONSerializable;
 
-public class Pie implements DataCollector<Object>, JSONSerializable {
+public class Pie implements DataCollector<Object>, JSONSerializable, Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2464289887223684813L;
+	
 	private Map<Object, Integer> data = new HashMap<Object, Integer>();
 	private int count;
 	private Coercer<?> coercer;

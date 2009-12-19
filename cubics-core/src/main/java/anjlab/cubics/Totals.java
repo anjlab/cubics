@@ -1,5 +1,6 @@
 package anjlab.cubics;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,8 +12,13 @@ import java.util.Map;
  *
  * @param <T> Type of the bean class.
  */
-public class Totals<T> {
+public class Totals<T> implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5295944320971832745L;
+	
 	private Map<String, Aggregate<T>> aggregates;
 	
 	public Totals(String[] measures, Map<String, List<CustomAggregateFactory<T>>> aggregateFactories) {

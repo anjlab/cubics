@@ -1,5 +1,6 @@
 package anjlab.cubics;
 
+
 public interface CustomAggregateFactory<T> {
 
 	public CustomAggregate<T> createAggregate();

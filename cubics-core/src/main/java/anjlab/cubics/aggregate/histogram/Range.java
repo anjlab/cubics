@@ -1,7 +1,14 @@
 package anjlab.cubics.aggregate.histogram;
 
-public class Range {
+import java.io.Serializable;
 
+public class Range implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -80844878348293940L;
+	
 	private Comparable<?> left;
 	private Comparable<?> right;
 	

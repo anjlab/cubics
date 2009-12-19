@@ -1,5 +1,6 @@
 package anjlab.cubics;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,8 +11,13 @@ import java.util.Map;
  *
  * @param <T> Type of the fact bean.
  */
-public class Cube<T> {
+public class Cube<T> implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3761391818016806526L;
+	
 	private FactModel<T> model;
 	private Map<String, Map<Key, Hierarchy<T>>> dimensions;
 		
