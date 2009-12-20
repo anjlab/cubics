@@ -20,14 +20,14 @@ public interface DataCollector<K> {
 	 * 
 	 * @return The data.
 	 */
-	public abstract Map<K, Integer> getData();
+	public abstract Map<K, Long> getData();
 	
 	/**
 	 * Number of values used to collect data.
 	 * 
 	 * @return Number of values.
 	 */
-	public abstract int getCount();
+	public abstract long getCount();
 
 	/**
 	 * If this instance {@link #getData()} doesn't have value for specified key, then 
@@ -35,7 +35,7 @@ public interface DataCollector<K> {
 	 * 
 	 * @return Default value.
 	 */
-	public abstract Integer getDefaultValue();
+	public abstract Long getDefaultValue();
 
 	/**
 	 * Coerce string <code>key</code> representation to object of type <code>K</code>.

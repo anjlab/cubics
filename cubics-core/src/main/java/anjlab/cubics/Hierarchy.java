@@ -42,9 +42,9 @@ public class Hierarchy<T> implements Serializable {
 		this(cube, parent, dimensionName, dimensionValue, new HashMap<Key, Hierarchy<T>>());
 	}
 
-
 	private void mergeTotals() {
 		for (Hierarchy<T> child : children.values()) {
+			child.mergeTotals();
 			totals.merge(child.totals);
 		}
 	}

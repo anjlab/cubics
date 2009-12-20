@@ -4,6 +4,9 @@ import java.io.Serializable;
 
 import anjlab.cubics.CustomAggregate;
 import anjlab.cubics.CustomAggregateFactory;
+import anjlab.cubics.aggregate.histogram.Histogram.ComparableRangesMergeStrategy;
+import anjlab.cubics.aggregate.histogram.Histogram.HistogramMergeStrategy;
+import anjlab.cubics.aggregate.histogram.Histogram.NumericRangesMergeStrategy;
 
 public class HistogramAggregateFactory<T> implements CustomAggregateFactory<T>, Serializable {
 
@@ -18,13 +21,17 @@ public class HistogramAggregateFactory<T> implements CustomAggregateFactory<T>, 
 	
 	private Range[] ranges;
 	
-	public HistogramAggregateFactory(double start, double step, double end) {
+	private HistogramMergeStrategy mergeStrategy;
+	
+	public HistogramAggregateFactory(HistogramMergeStrategy mergeStrategy, double start, double step, double end) {
+		this.mergeStrategy = mergeStrategy;
 		this.start = start;
 		this.step = step;
 		this.end = end;
 	}
 	
-	public HistogramAggregateFactory(Range... ranges) {
+	public HistogramAggregateFactory(HistogramMergeStrategy mergeStrategy, Range... ranges) {
+		this.mergeStrategy = mergeStrategy;
 		this.ranges = ranges;
 	}
 	
@@ -37,8 +44,13 @@ public class HistogramAggregateFactory<T> implements CustomAggregateFactory<T>, 
 	}
 
 	public CustomAggregate<T> createAggregate() {
+		MergeStrategy<Histogram> mergeStrategy = 
+			this.mergeStrategy == HistogramMergeStrategy.ComparableRanges
+				? new ComparableRangesMergeStrategy()
+				: new NumericRangesMergeStrategy();
+				
 		return ranges == null 
-		     ? new HistogramAggregate<T>(start, step, end)
-		     : new HistogramAggregate<T>(ranges);
+		     ? new HistogramAggregate<T>(mergeStrategy, start, step, end)
+		     : new HistogramAggregate<T>(mergeStrategy, ranges);
 	}
 }

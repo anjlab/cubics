@@ -1,5 +1,7 @@
 package anjlab.cubics.aggregate.histogram;
 
+import static anjlab.cubics.aggregate.histogram.Range.compare;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,57 +18,116 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 	 */
 	private static final long serialVersionUID = -9174472731559232821L;
 	
-	private Map<Range, Integer> data = new HashMap<Range, Integer>();
+	private Map<Range, Long> data;
 	private Range[] ranges;
-	private int others;
-	private int count;
+	private long others;
+	private long count;
 
-	public Histogram(Range... ranges) {
-		initData(ranges);
-	}
+	private MergeStrategy<Histogram> mergeStrategy;
 	
-	public Histogram(double start, double step, double end) {
-		List<Range> ranges = new ArrayList<Range>();
-		for (double i = start; i <= end; i += step) {
-			ranges.add(new Range(i, true, i + step, false));
-		}
-		ranges.get(ranges.size() - 1).setRightInclusive(true);
-		initData(ranges.toArray(new Range[ranges.size()]));
+	public Histogram(MergeStrategy<Histogram> mergeStrategy, double start, double step, double end) {
+		this.mergeStrategy = mergeStrategy;
+		initData(Range.createRanges(start, step, end));
+	}
+
+	public Histogram(MergeStrategy<Histogram> mergeStrategy, Range... ranges) {
+		this.mergeStrategy = mergeStrategy;
+		initData(ranges);
 	}
 
 	private void initData(Range... ranges) {
+		data = new HashMap<Range, Long>();
 		for (Range range : ranges) {
-			data.put(range, 0);
+			data.put(range, 0L);
 		}
 		this.ranges = ranges;
 	}
 
 	public void add(Object value) {
-		count++;
+		add(value, 1);
+	}
+
+	public void add(Object value, int numberOfValues) {
+		count += numberOfValues;
 		for (Range range : ranges) {
 			if (range.includes(value)) {
-				data.put(range, data.get(range) + 1);
+				data.put(range, data.get(range) + numberOfValues);
 				return;
 			}
 		}
-		others++;
+		others += numberOfValues;
 	}
 
-	public void merge(Histogram histogram) {
-		for (Range range : histogram.ranges) {
-			Integer other = histogram.data.get(range);
-			if (other != null) {
-				data.put(range, data.get(range) + other);
-			}
+	public void merge(Histogram other) {
+		long expectedCount = this.count + other.count;
+		
+		mergeStrategy.merge(this, other);
+		
+		if (count != expectedCount) {
+			throw new IllegalStateException(
+					"Number of values differs after merge (" + expectedCount + " != " + count + ")");
 		}
-		others += histogram.others;
-		count += histogram.count;
 	}
 
-	public Map<Range, Integer> getData() {
+	public Map<Range, Long> getData() {
 		return data;
 	}
 
+	double getIntegralValue(Range boundaries) {
+		List<Range> valueRanges = new ArrayList<Range>(); 
+		
+		for (Range range : ranges) {
+			if (range.includes(boundaries.getLeft()) 
+					|| range.includes(boundaries.getRight())
+					|| boundaries.includes(range.getLeft())
+					|| boundaries.includes(range.getRight())) 
+			{
+				valueRanges.add(range);
+			}
+		}
+		
+		Double value = 0d;
+		
+		for (Range range : valueRanges) {
+			Long rangeValue = data.get(range);
+			
+			if (rangeValue == null) {
+				continue;
+			}
+			
+			if (boundaries.includes(range)) {
+				value += rangeValue;
+			} else {
+				value += getPartialValue(range, rangeValue, boundaries);
+			}
+		}
+		
+		return value;
+	}
+
+	private double getPartialValue(Range valueRange, Long rangeValue, Range boundaries) {
+		Number left = (Number) boundaries.getLeft();
+		Number right = (Number) boundaries.getRight();
+
+		Number rightVR = (Number) valueRange.getRight();
+		Number leftVR = (Number) valueRange.getLeft();
+
+		if (compare(valueRange.getLeft(), left) > 0) {
+			left = leftVR;
+		}
+		
+		if (compare(valueRange.getRight(), right) < 0) {
+			right = rightVR;
+		}
+
+		double integralValue = 
+			(right.doubleValue() - left.doubleValue()) 
+				/ (rightVR.doubleValue() - leftVR.doubleValue()) * rangeValue;
+		
+		return integralValue;
+	}
+
+	
 	public Range getRange(int index) {
 		return ranges[index];
 	}
@@ -75,16 +136,16 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 		return ranges.length;
 	}
 	
-	public int getOthers() {
+	public long getOthers() {
 		return others;
 	}
 
-	public int getCount() {
+	public long getCount() {
 		return count;
 	}
 
-	public Integer getDefaultValue() {
-		return 0;
+	public Long getDefaultValue() {
+		return 0L;
 	}
 	
 	@Override
@@ -152,5 +213,122 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 		builder.append("}");
 		
 		return builder.toString();
+	}
+
+	public enum HistogramMergeStrategy {
+		ComparableRanges, 
+		NumericRanges
+	}
+	
+	static class ComparableRangesMergeStrategy implements MergeStrategy<Histogram>, Serializable {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7883554568413539013L;
+
+		public void merge(Histogram target, Histogram source) {
+			for (Range range : source.ranges) {
+				Long sourceValue = source.data.get(range);
+				if (sourceValue != null) {
+					target.data.put(range, target.data.get(range) + sourceValue);
+				}
+			}
+			target.others += source.others;
+			target.count += source.count;	
+		}
+
+	}
+	
+	static class NumericRangesMergeStrategy implements MergeStrategy<Histogram>, Serializable {
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7335493757218285558L;
+
+		public void merge(Histogram target, Histogram source) {
+			Number left = (Number) min(getLeftSide(target), getLeftSide(source));
+			Number right = (Number) max(getRightSide(target), getRightSide(source));
+			
+			//	TODO Calculate number of ranges or pass through parameters?
+			int n = 10;
+
+			Map<Range, Double> mergedData = new HashMap<Range, Double>();
+			
+			double start = left.doubleValue();
+			double end = right.doubleValue();
+			double step = (end - start) / n;
+			
+			Range[] mergedRanges = Range.createRanges(start, step, end);
+			
+			for (Range range : mergedRanges) {
+				double targetValue = target.getIntegralValue(range);
+				double sourceValue = source.getIntegralValue(range);
+				mergedData.put(range, targetValue + sourceValue);
+			}
+			
+			target.ranges = mergedRanges;
+			target.data = new HashMap<Range, Long>();
+			
+			target.count = roundMergedData(mergedData, target.data);
+			
+			target.others += source.others;
+		}
+
+		private long roundMergedData(Map<Range, Double> mergedData, Map<Range, Long> result) {
+			long count = 0;
+			
+			double diff = 0;
+			
+			for (Range range : mergedData.keySet()) {
+
+				Double doubleValue = mergedData.get(range);
+				
+				long longValue = Math.round(doubleValue + diff);
+				
+				diff += doubleValue - longValue;
+				
+				count += longValue;
+				
+				result.put(range, longValue);
+			}
+			
+			return count;
+		}
+
+		private Comparable<?> getRightSide(Histogram histogram) {
+			if (histogram.ranges.length == 0) {
+				return null;
+			}
+			return histogram.ranges[histogram.ranges.length - 1].getRight();
+		}
+
+		private Comparable<?> getLeftSide(Histogram histogram) {
+			if (histogram.ranges.length == 0) {
+				return null;
+			}
+			return histogram.ranges[0].getLeft();
+		}
+
+		private Comparable<?> min(Comparable<?> a, Comparable<?> b) {
+			if (a == null) {
+				return b;
+			}
+			if (b == null) {
+				return a;
+			}
+			return Range.compare(a, b) <= 0 ? a : b;
+		}
+
+		private Comparable<?> max(Comparable<?> a, Comparable<?> b) {
+			if (a == null) {
+				return b;
+			}
+			if (b == null) {
+				return a;
+			}
+			return Range.compare(a, b) >= 0 ? a : b;
+		}
 	}
 }

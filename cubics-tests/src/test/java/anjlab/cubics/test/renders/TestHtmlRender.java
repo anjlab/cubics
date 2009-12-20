@@ -11,6 +11,7 @@ import org.junit.Test;
 import anjlab.cubics.Cube;
 import anjlab.cubics.FactModel;
 import anjlab.cubics.aggregate.histogram.HistogramAggregateFactory;
+import anjlab.cubics.aggregate.histogram.Histogram.HistogramMergeStrategy;
 import anjlab.cubics.aggregate.pie.PieAggregateFactory;
 import anjlab.cubics.coerce.IntegerCoercer;
 import anjlab.cubics.renders.HtmlRender;
@@ -44,9 +45,9 @@ public class TestHtmlRender {
 		builder.insert(0, "<a href='javascript:collapseAll();'>Collapse All</a>&nbsp;");
 		builder.insert(0, "<body>");
 		builder.insert(0, "<style> td { vertical-align:top; } </style>\n");
-		builder.insert(0, "<script src='js/cube.js'></script>");
-		builder.insert(0, "<script src='js/jquery-1.3.2.js'></script>");
-		builder.insert(0, "<link rel='stylesheet' href='css/cube.css' type='text/css'>");
+		builder.insert(0, "<script src='anjlab/cubics/js/cube.js'></script>");
+		builder.insert(0, "<script src='anjlab/cubics/js/jquery-1.3.2.js'></script>");
+		builder.insert(0, "<link rel='stylesheet' href='anjlab/cubics/css/cube.css' type='text/css'>");
 		builder.insert(0, "<html>");
 		String html = builder.toString();
 		builder.append("<div id='debug'/>");
@@ -94,7 +95,10 @@ public class TestHtmlRender {
 	public void renderHistogramAndPie() throws Exception {
 		FactModel<Fact> model = TestHelper.createFactModel();
 		
-		model.declareCustomAggregate(new HistogramAggregateFactory<Fact>(0, 1000, 10000), "duration");
+		model.declareCustomAggregate(
+				new HistogramAggregateFactory<Fact>(HistogramMergeStrategy.NumericRanges, 0, 1000, 10000), 
+				"duration");
+		
 		model.declareCustomAggregate(new PieAggregateFactory<Fact>(new IntegerCoercer()), "succeeded");
 
 		Iterable<Fact> facts = TestHelper.createTestFacts();

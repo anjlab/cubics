@@ -15,12 +15,12 @@ public class HistogramAggregate<T> implements CustomAggregate<T>, Serializable {
 	
 	private Histogram histogram;
 	
-	public HistogramAggregate(double start, double step, double end) {
-		histogram = new Histogram(start, step, end);
+	public HistogramAggregate(MergeStrategy<Histogram> mergeStrategy, double start, double step, double end) {
+		histogram = new Histogram(mergeStrategy, start, step, end);
 	}
 
-	public HistogramAggregate(Range[] ranges) {
-		histogram = new Histogram(ranges);
+	public HistogramAggregate(MergeStrategy<Histogram> mergeStrategy, Range[] ranges) {
+		histogram = new Histogram(mergeStrategy, ranges);
 	}
 
 	public void merge(Aggregate<T> aggregate, CustomAggregate<T> other) {

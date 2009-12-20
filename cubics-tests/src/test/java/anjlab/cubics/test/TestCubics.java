@@ -16,6 +16,7 @@ import anjlab.cubics.Key;
 import anjlab.cubics.Totals;
 import anjlab.cubics.aggregate.histogram.Histogram;
 import anjlab.cubics.aggregate.histogram.HistogramAggregateFactory;
+import anjlab.cubics.aggregate.histogram.Histogram.HistogramMergeStrategy;
 import anjlab.cubics.aggregate.pie.Pie;
 import anjlab.cubics.aggregate.pie.PieAggregateFactory;
 import anjlab.cubics.coerce.IntegerCoercer;
@@ -186,7 +187,9 @@ public class TestCubics {
 		FactModel<Fact> model = TestHelper.createFactModel();
 		Iterable<Fact> facts = TestHelper.createTestFacts();
 		
-		model.declareCustomAggregate(new HistogramAggregateFactory<Fact>(0, 1000, 10000), "duration");
+		model.declareCustomAggregate(
+				new HistogramAggregateFactory<Fact>(HistogramMergeStrategy.NumericRanges, 0, 1000, 10000), 
+				"duration");
 		
 		Cube<Fact> c = Cube.createCube(model, facts);
 		
@@ -194,21 +197,21 @@ public class TestCubics {
 			c.getRoot().getTotals().getAggregate("duration").getValue("histogram");
 
 		assertNotNull(histogram);
-		assertEquals(11, histogram.getData().size());
-		Integer value;
+		assertEquals(10, histogram.getData().size());
+		Long value;
 		
 		value = histogram.getData().get(histogram.getRange(0));	//	[0;	1000)
 		assertNotNull(value);
-		assertEquals(new Integer(0), value);
+		assertEquals(new Long(0), value);
 		value = histogram.getData().get(histogram.getRange(1));	//	[1000; 2000)
 		assertNotNull(value);
-		assertEquals(new Integer(4), value);
+		assertEquals(new Long(4), value);
 		value = histogram.getData().get(histogram.getRange(2));	//	[2000; 3000)
 		assertNotNull(value);
-		assertEquals(new Integer(1), value);
+		assertEquals(new Long(1), value);
 		value = histogram.getData().get(histogram.getRange(2));	//	[3000; 4000)
 		assertNotNull(value);
-		assertEquals(new Integer(1), value);
+		assertEquals(new Long(1), value);
 		assertEquals(0, histogram.getOthers());
 		assertEquals(6, histogram.getCount());
 	}
@@ -226,8 +229,8 @@ public class TestCubics {
 
 		assertNotNull(pie);
 		assertEquals(2, pie.getData().size());
-		assertEquals(new Integer(5), pie.getData().get(1));
-		assertEquals(new Integer(1), pie.getData().get(0));
+		assertEquals(new Long(5), pie.getData().get(1));
+		assertEquals(new Long(1), pie.getData().get(0));
 		assertEquals(6, pie.getCount());
 	}
 	

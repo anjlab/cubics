@@ -18,8 +18,8 @@ public class Pie implements DataCollector<Object>, JSONSerializable, Serializabl
 	 */
 	private static final long serialVersionUID = 2464289887223684813L;
 	
-	private Map<Object, Integer> data = new HashMap<Object, Integer>();
-	private int count;
+	private Map<Object, Long> data = new HashMap<Object, Long>();
+	private long count;
 	private Coercer<?> coercer;
 	
 	public Pie(Coercer<?> coercer) {
@@ -27,30 +27,30 @@ public class Pie implements DataCollector<Object>, JSONSerializable, Serializabl
 	}
 
 	public void add(Object value) {
-		Integer prev = data.get(value);
+		Long prev = data.get(value);
 		data.put(value, prev == null ? 1 : prev + 1);
 		count++;
 	}
 
 	public void merge(Pie pie) {
 		for (Object key : pie.data.keySet()) {
-			Integer prev = data.get(key);
-			Integer curr = pie.data.get(key);
+			Long prev = data.get(key);
+			Long curr = pie.data.get(key);
 			data.put(key, prev == null ? curr : prev + curr);
 		}
 		count += pie.count;
 	}
 
-	public Map<Object, Integer> getData() {
+	public Map<Object, Long> getData() {
 		return data;
 	}
 
-	public int getCount() {
+	public long getCount() {
 		return count;
 	}
 
-	public Integer getDefaultValue() {
-		return 0;
+	public Long getDefaultValue() {
+		return 0L;
 	}
 
 	@Override

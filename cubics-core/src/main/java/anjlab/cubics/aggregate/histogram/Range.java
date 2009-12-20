@@ -1,6 +1,8 @@
 package anjlab.cubics.aggregate.histogram;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Range implements Serializable {
 
@@ -72,6 +74,10 @@ public class Range implements Serializable {
 		     + (rightInclusive ? "]" : ")");
 	}
 
+	public boolean includes(Range range) {
+		return includes(range.left) && includes(range.right);
+	}
+	
 	public boolean includes(Object value) {
 		int compareResult;
 
@@ -88,8 +94,17 @@ public class Range implements Serializable {
 		return true;
 	}
 
+	public static Range[] createRanges(double start, double step, double end) {
+		List<Range> ranges = new ArrayList<Range>();
+		for (double i = start; i < end; i += step) {
+			ranges.add(new Range(i, true, i + step, false));
+		}
+		ranges.get(ranges.size() - 1).setRightInclusive(true);
+		return ranges.toArray(new Range[ranges.size()]);
+	}
+
 	@SuppressWarnings("unchecked")
-	private int compare(Comparable<?> boundary, Object value) {
+	public static int compare(Comparable<?> boundary, Object value) {
 		if (boundary instanceof Number && value instanceof Number) {
 			Double doubleBoundary = ((Number) boundary).doubleValue();
 			Double doubleValue = ((Number) value).doubleValue();

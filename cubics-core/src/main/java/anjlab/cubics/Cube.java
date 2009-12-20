@@ -67,14 +67,16 @@ public class Cube<T> implements Serializable {
 					increaseRequired = true;
 				}
 			}
-
-			hierarchy.addFact(fact);
 			
 			parentHierarchy = hierarchy;
 		}
+
+		Hierarchy<T> lowestHierarchy = parentHierarchy;
+
+		lowestHierarchy.addFact(fact);
 		
 		if (increaseRequired) {
-			parentHierarchy.increaseSize();
+			lowestHierarchy.increaseSize();
 		}
 	}
 
@@ -94,7 +96,12 @@ public class Cube<T> implements Serializable {
 	 * @return New cube.
 	 */
 	public static <T> Cube<T> createCube(FactModel<T> model, Iterable<T> facts) {
-		return new Cube<T>(model, facts);
+		Cube<T> cube = new Cube<T>(model, facts);
+		
+		//	Force merge totals
+		cube.getRoot();
+		
+		return cube;
 	}
 
 	/**

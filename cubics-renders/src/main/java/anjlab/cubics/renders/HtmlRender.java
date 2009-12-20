@@ -183,7 +183,7 @@ public class HtmlRender<T> {
 						if (complexValue instanceof DataCollector<?>)  {
 							DataCollector<?> collector = (DataCollector<?>) complexValue;
 							Object key = collector.coerceKey(parts[1]);
-							Integer intValue = collector.getData().get(key);
+							Long intValue = collector.getData().get(key);
 
 							if (intValue == null) {
 								intValue = collector.getDefaultValue();

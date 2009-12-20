@@ -6,6 +6,11 @@ import java.util.List;
 import org.junit.Test;
 
 import anjlab.cubics.FactModel;
+import anjlab.cubics.aggregate.histogram.Histogram;
+import anjlab.cubics.aggregate.histogram.HistogramAggregate;
+import anjlab.cubics.aggregate.histogram.HistogramAggregateFactory;
+import anjlab.cubics.aggregate.histogram.Range;
+import anjlab.cubics.aggregate.histogram.Histogram.HistogramMergeStrategy;
 
 public class TestHelper {
 
@@ -14,6 +19,18 @@ public class TestHelper {
 		//	junit needs this
 	}
 	
+	public static Histogram createHistogram(double start, double step, double end) {
+		HistogramAggregateFactory<Fact> factory = 
+				new HistogramAggregateFactory<Fact>(
+					HistogramMergeStrategy.NumericRanges, 
+					Range.createRanges(start, step, end));
+		
+		HistogramAggregate<Fact> aggregate = (HistogramAggregate<Fact>) factory.createAggregate();
+		
+		Histogram histogram = aggregate.getValue();
+		return histogram;
+	}
+
 	public static FactModel<Fact> createFactModel() {
 		FactModel<Fact> model = new FactModel<Fact>(Fact.class);
 		model.setDimensions("year", "month", "day", "hour");

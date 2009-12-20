@@ -27,7 +27,7 @@ public class TestSerialize {
 		
 		os.close();
 		
-		Assert.assertEquals(4665, baos.size());
+		Assert.assertEquals(4838, baos.size());
 	}
 	
 }
