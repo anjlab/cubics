@@ -230,4 +230,21 @@ public class TestCubics {
 		assertEquals(new Integer(1), pie.getData().get(0));
 		assertEquals(6, pie.getCount());
 	}
+	
+	@Test
+	public void calculateCubeWithoutFacts() {
+		FactModel<Fact> model = TestHelper.createFactModel();
+		
+		Cube<Fact> c = Cube.createCube(model);
+		
+		Hierarchy<Fact> root = c.getRoot();
+		
+		assertEquals(0, root.getChildren().size());
+		
+		Iterable<Fact> facts = TestHelper.createTestFacts();		
+		
+		c.addFact(facts.iterator().next());
+		
+		assertEquals(1, root.getChildren().size());
+	}
 }

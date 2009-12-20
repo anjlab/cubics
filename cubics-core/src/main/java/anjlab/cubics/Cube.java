@@ -20,52 +20,61 @@ public class Cube<T> implements Serializable {
 	
 	private FactModel<T> model;
 	private Map<String, Map<Key, Hierarchy<T>>> dimensions;
+	private BeanClass<T> beanClass;
 		
 	private Cube(FactModel<T> model, Iterable<T> facts) {
 		this.model = model;
+		this.beanClass = model.getBeanClass();
 		initDimensions(model);
 		calculateCube(facts);
 	}
 
 	private void calculateCube(Iterable<T> facts) {
-		BeanClass<T> beanClass = model.getBeanClass();
+		if (facts == null) {
+			return;
+		}
+		
 		for (T fact : facts) {
+			addFact(fact);
+		}
+	}
+
+	public void addFact(T fact) {
+		boolean increaseRequired = false;
+		
+		Hierarchy<T> parentHierarchy = null;
+		for (String dimensionName : model.getDimensions()) {
+			Object dimensionValue = beanClass.getValue(dimensionName, fact);
+
+			Map<Key, Hierarchy<T>> slice = this.dimensions.get(dimensionName);
+
+			Key key = new Key(
+					dimensionValue,
+					parentHierarchy == null 
+						? null 
+						: parentHierarchy.getPath());
 			
-			boolean increaseRequired = false;
+			if (! slice.containsKey(key)) {
+				slice.put(key, new Hierarchy<T>(
+						this, parentHierarchy, dimensionName, dimensionValue));
+			}
 			
-			Hierarchy<T> parentHierarchy = null;
-			for (String dimensionName : model.getDimensions()) {
-				Object dimensionValue = beanClass.getValue(dimensionName, fact);
+			Hierarchy<T> hierarchy = slice.get(key);
 
-				Map<Key, Hierarchy<T>> slice = this.dimensions.get(dimensionName);
-
-				Key key = new Key(
-						dimensionValue,
-						parentHierarchy == null 
-							? null 
-							: parentHierarchy.getPath());
-				
-				if (! slice.containsKey(key)) {
-					slice.put(key, new Hierarchy<T>(
-							this, parentHierarchy, dimensionName, dimensionValue));
+			if (parentHierarchy != null) {
+				if (! parentHierarchy.getChildren().containsKey(key)) {
+					parentHierarchy.getChildren().put(key, hierarchy);
+					increaseRequired = true;
 				}
-				
-				Hierarchy<T> hierarchy = slice.get(key);
-
-				if (parentHierarchy != null) {
-					if (! parentHierarchy.getChildren().containsKey(key)) {
-						parentHierarchy.getChildren().put(key, hierarchy);
-						increaseRequired = true;
-					}
-				}
-
-				hierarchy.addFact(fact);
-				
-				parentHierarchy = hierarchy;
 			}
-			if (increaseRequired) {
-				parentHierarchy.increaseSize();
-			}
+
+			hierarchy.addFact(fact);
+			
+			parentHierarchy = hierarchy;
+		}
+		
+		if (increaseRequired) {
+			parentHierarchy.increaseSize();
 		}
 	}
 
@@ -86,6 +95,17 @@ public class Cube<T> implements Serializable {
 	 */
 	public static <T> Cube<T> createCube(FactModel<T> model, Iterable<T> facts) {
 		return new Cube<T>(model, facts);
+	}
+
+	/**
+	 * Creates empty cube for specified model.
+	 * 
+	 * @param <T> Type of the fact bean.
+	 * @param model The {@link FactModel} for the corresponding bean type <code>T</code>.
+	 * @return New cube.
+	 */
+	public static <T> Cube<T> createCube(FactModel<T> model) {
+		return createCube(model, null);
 	}
 
 	private Hierarchy<T> root;
