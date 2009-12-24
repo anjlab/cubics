@@ -1,5 +1,6 @@
 package anjlab.cubics.test.renders;
 
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.FileNotFoundException;
@@ -122,4 +123,21 @@ public class TestHtmlRender {
 		
 		System.out.println(html);
 	}
+
+	@Test
+	public void renderEmptyCube() throws Exception {
+		FactModel<Fact> model = TestHelper.createFactModel();
+		Cube<Fact> c = Cube.createCube(model);
+		
+		HtmlRender<Fact> render = new HtmlRender<Fact>(c);
+		
+		StringBuilder builder = render.render();
+		assertNotNull(builder);
+		assertTrue("Rendering failed", builder.toString().endsWith("</tr></table>"));
+		
+		String html = saveToHTMLFile(builder, "../cubics-renders/target/classes/index4.html");
+		
+		System.out.println(html);
+	}
+
 }

@@ -101,7 +101,10 @@ public class HtmlRender<T> {
 		append("<tr><td id='ix' class='x c-e' rowspan='", (root.getSizeWithTotals() - 1), "'>all</td>");
 		
 		renderHierarchy(root, -1, "x");
-		deleteFromEnd("<tr>".length());
+		
+		if (root.getChildren().size() > 0) {	//	Not empty cube
+			deleteFromEnd("<tr>".length());
+		}
 		
 		append("</table>");
 		
@@ -152,16 +155,23 @@ public class HtmlRender<T> {
 			}
 		}
 		
-		int closingTr = "</tr>".length();
+		int offsetFromEnd;
 		
-		insert(closingTr, "\n<tr><td ");
-		index = insertCssClass(closingTr, path, index, 
+		if (keys.length == 0) {
+			append("</tr>");
+			offsetFromEnd = 0;
+		} else {
+			offsetFromEnd = "</tr>".length();
+		}
+		
+		insert(offsetFromEnd, "\n<tr><td ");
+		index = insertCssClass(offsetFromEnd, path, index, 
 				true /* set this to true to make totals collapsed only with parent dimension */,
 				true,
 				"c-t");
 		colspan = dimensions.length - level;
-		insert(closingTr, " colspan='", colspan, "'>Totals:</td></tr>");
-		index = renderTotals(closingTr + "\n<tr>".length(), hierarchy.getTotals(), path, index, 
+		insert(offsetFromEnd, " colspan='", colspan, "'>Totals:</td></tr>");
+		index = renderTotals(offsetFromEnd + "\n<tr>".length(), hierarchy.getTotals(), path, index, 
 				true /* set this to true to make totals collapsed only with parent dimension */,
 				path);
 	}
