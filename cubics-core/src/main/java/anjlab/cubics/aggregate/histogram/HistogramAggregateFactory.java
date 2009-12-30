@@ -2,9 +2,8 @@ package anjlab.cubics.aggregate.histogram;
 
 import java.io.Serializable;
 
-import anjlab.cubics.CustomAggregate;
 import anjlab.cubics.CustomAggregateFactory;
-import anjlab.cubics.aggregate.histogram.Histogram.ComparableRangesMergeStrategy;
+import anjlab.cubics.aggregate.histogram.Histogram.SameRangesMergeStrategy;
 import anjlab.cubics.aggregate.histogram.Histogram.HistogramMergeStrategy;
 import anjlab.cubics.aggregate.histogram.Histogram.NumericRangesMergeStrategy;
 
@@ -43,10 +42,10 @@ public class HistogramAggregateFactory<T> implements CustomAggregateFactory<T>, 
 		return "histogram";
 	}
 
-	public CustomAggregate<T> createAggregate() {
+	public HistogramAggregate<T> createAggregate() {
 		MergeStrategy<Histogram> mergeStrategy = 
-			this.mergeStrategy == HistogramMergeStrategy.ComparableRanges
-				? new ComparableRangesMergeStrategy()
+			this.mergeStrategy == HistogramMergeStrategy.SameRanges
+				? new SameRangesMergeStrategy()
 				: new NumericRangesMergeStrategy();
 				
 		return ranges == null 

@@ -1,6 +1,6 @@
 package anjlab.cubics.aggregate.histogram;
 
-import anjlab.cubics.aggregate.histogram.Histogram.ComparableRangesMergeStrategy;
+import anjlab.cubics.aggregate.histogram.Histogram.SameRangesMergeStrategy;
 import anjlab.cubics.aggregate.histogram.Histogram.NumericRangesMergeStrategy;
 
 /**
@@ -10,7 +10,7 @@ import anjlab.cubics.aggregate.histogram.Histogram.NumericRangesMergeStrategy;
  *
  * @param <T> Type of aggregate.
  * 
- * @see ComparableRangesMergeStrategy
+ * @see SameRangesMergeStrategy
  * @see NumericRangesMergeStrategy
  */
 public interface MergeStrategy<T> {

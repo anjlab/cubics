@@ -116,5 +116,17 @@ public class TestHistogram {
 		assertEquals(range, histogram.getRange(rangeIndex));
 		assertEquals(new Long(expectedRangeValue), histogram.getData().get(range));
 	}
-	
+
+	@Test
+	public void testLeftAndRightOthers() {
+		Histogram histogram = TestHelper.createHistogram(20, 10, 80);
+
+		for (int i = 0; i <= 100; i++) {
+			histogram.add(i);
+		}
+		
+		assertEquals(40, histogram.getOthers());
+		assertEquals(20, histogram.getLeftOthers());
+		assertEquals(20, histogram.getRightOthers());
+	}
 }

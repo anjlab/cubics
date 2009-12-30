@@ -94,10 +94,19 @@ public class Range implements Serializable {
 		return true;
 	}
 
+	public final static double epsilon = 0.000000001;
+	
 	public static Range[] createRanges(double start, double step, double end) {
 		List<Range> ranges = new ArrayList<Range>();
+		if (end < start || compareDoubles(end, start) == 0) {
+			return new Range[0];
+		}
 		for (double i = start; i < end; i += step) {
-			ranges.add(new Range(i, true, i + step, false));
+			double right = i + step;
+			if (right > end) {
+				right = end;
+			}
+			ranges.add(new Range(i, true, right, false));
 		}
 		ranges.get(ranges.size() - 1).setRightInclusive(true);
 		return ranges.toArray(new Range[ranges.size()]);
@@ -121,5 +130,9 @@ public class Range implements Serializable {
 		result.left = Double.parseDouble(key.substring(1, key.indexOf(";")).trim());
 		result.right = Double.parseDouble(key.substring(key.indexOf(";") + 1, key.length() - 1).trim());
 		return result;
+	}
+
+	public static int compareDoubles(double a, double b) {
+		return Math.abs(a - b) <= epsilon ? 0 : Double.compare(a, b);
 	}
 }

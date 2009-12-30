@@ -4,6 +4,8 @@ import static anjlab.cubics.aggregate.histogram.Range.compare;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +22,13 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 	
 	private Map<Range, Long> data;
 	private Range[] ranges;
-	private long others;
+	private long leftOthers;
+	private long rightOthers;
 	private long count;
+	private Range totalRange;
 
+	private Object latestInRange; 
+	
 	private MergeStrategy<Histogram> mergeStrategy;
 	
 	public Histogram(MergeStrategy<Histogram> mergeStrategy, double start, double step, double end) {
@@ -41,21 +47,40 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 			data.put(range, 0L);
 		}
 		this.ranges = ranges;
+		this.totalRange = ranges.length == 0 
+							? new Range(0, false, 0, false) //	empty range
+							: new Range(ranges[0].getLeft(), true, ranges[ranges.length - 1].getRight(), true);
 	}
 
 	public void add(Object value) {
 		add(value, 1);
 	}
 
-	public void add(Object value, int numberOfValues) {
+	public void add(final Object value, int numberOfValues) {
 		count += numberOfValues;
-		for (Range range : ranges) {
-			if (range.includes(value)) {
-				data.put(range, data.get(range) + numberOfValues);
-				return;
-			}
+		
+		if (Range.compare(totalRange.getLeft(), value) > 0)  {
+			leftOthers += numberOfValues;
+			return;
 		}
-		others += numberOfValues;
+
+		if (Range.compare(totalRange.getRight(), value) < 0)  {
+			rightOthers += numberOfValues;
+			return;
+		}
+
+		int rangeIndex = Arrays.binarySearch(ranges, null, new Comparator<Range>() {
+			public int compare(Range o1, Range o2) {
+				if (o1.includes(value)) {
+					return 0;
+				}
+				return Range.compare(o1.getLeft(), value);
+			}
+		});
+		
+		Range range = ranges[rangeIndex];
+		data.put(range, data.get(range) + numberOfValues);
+		latestInRange = value;
 	}
 
 	public void merge(Histogram other) {
@@ -63,7 +88,7 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 		
 		mergeStrategy.merge(this, other);
 		
-		if (count != expectedCount) {
+		if (expectedCount != count) {
 			throw new IllegalStateException(
 					"Number of values differs after merge (" + expectedCount + " != " + count + ")");
 		}
@@ -136,8 +161,28 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 		return ranges.length;
 	}
 	
+	/**
+	 * 
+	 * @return Returns number of values that are out of the leftmost range.
+	 */
+	public long getLeftOthers() {
+		return leftOthers;
+	}
+	
+	/**
+	 * 
+	 * @return Returns number of values that are out of the rightmost range.
+	 */
+	public long getRightOthers() {
+		return rightOthers;
+	}
+	
+	/**
+	 * 
+	 * @return Returns number of values that are out of ranges.
+	 */
 	public long getOthers() {
-		return others;
+		return leftOthers + rightOthers;
 	}
 
 	public long getCount() {
@@ -146,6 +191,10 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 
 	public Long getDefaultValue() {
 		return 0L;
+	}
+
+	public Object getLatestInRange() {
+		return latestInRange;
 	}
 	
 	@Override
@@ -162,8 +211,10 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 		if (builder.length() > 0) {
 			builder.append(", ");
 		}
-		builder.append("others = ");
-		builder.append(others);
+		builder.append("leftOthers = ");
+		builder.append(leftOthers);
+		builder.append(", rightOthers = ");
+		builder.append(rightOthers);
 		builder.append(", count = ");
 		builder.append(count);
 		return builder.toString();
@@ -206,7 +257,13 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 		builder.append("]");
 		builder.append(",");
 		builder.append("others:");
-		builder.append(others);
+		builder.append(getOthers());
+		builder.append(",");
+		builder.append("leftOthers:");
+		builder.append(leftOthers);
+		builder.append(",");
+		builder.append("rightOthers:");
+		builder.append(rightOthers);
 		builder.append(",");
 		builder.append("count:");
 		builder.append(count);
@@ -216,11 +273,11 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 	}
 
 	public enum HistogramMergeStrategy {
-		ComparableRanges, 
+		SameRanges, 
 		NumericRanges
 	}
 	
-	static class ComparableRangesMergeStrategy implements MergeStrategy<Histogram>, Serializable {
+	static class SameRangesMergeStrategy implements MergeStrategy<Histogram>, Serializable {
 
 		/**
 		 * 
@@ -234,8 +291,9 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 					target.data.put(range, target.data.get(range) + sourceValue);
 				}
 			}
-			target.others += source.others;
-			target.count += source.count;	
+			target.leftOthers += source.leftOthers;
+			target.rightOthers += source.rightOthers;
+			target.count += source.count;
 		}
 
 	}
@@ -270,20 +328,31 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 			
 			target.ranges = mergedRanges;
 			target.data = new HashMap<Range, Long>();
+
+			long expectedCount = target.count + source.count;
+
+			long countInRanges = roundValues(target.data, mergedData);
 			
-			target.count = roundMergedData(mergedData, target.data);
+			Range leftDiffRange = new Range(min(getLeftSide(target), getLeftSide(source)), true, max(getLeftSide(target), getLeftSide(source)), false);
 			
-			target.others += source.others;
+			double countInLeftDiffRange = target.getIntegralValue(leftDiffRange) + source.getIntegralValue(leftDiffRange);
+			
+			target.leftOthers += source.leftOthers - countInLeftDiffRange;
+			
+			//	Some values may be lost due to range borders rounding. Add those values to the rightOthers
+			target.rightOthers = expectedCount - countInRanges - target.leftOthers;
+			
+			target.count = expectedCount;
 		}
 
-		private long roundMergedData(Map<Range, Double> mergedData, Map<Range, Long> result) {
+		private long roundValues(Map<Range, Long> target, Map<Range, Double> source) {
 			long count = 0;
 			
 			double diff = 0;
 			
-			for (Range range : mergedData.keySet()) {
+			for (Range range : source.keySet()) {
 
-				Double doubleValue = mergedData.get(range);
+				Double doubleValue = source.get(range);
 				
 				long longValue = Math.round(doubleValue + diff);
 				
@@ -291,7 +360,7 @@ public class Histogram implements DataCollector<Range>, JSONSerializable, Serial
 				
 				count += longValue;
 				
-				result.put(range, longValue);
+				target.put(range, longValue);
 			}
 			
 			return count;
