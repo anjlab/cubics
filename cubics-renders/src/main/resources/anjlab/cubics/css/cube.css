@@ -52,7 +52,7 @@ table.cubics {
 .c-a { /* cubics-aggregate */
 }
 
-.c-cb {	/* cubics-chart-button */
+.c-hb {	/* cubics-histogram-button */
 	cursor: pointer;
 	width: 16px;
 	height: 16px;
@@ -61,8 +61,21 @@ table.cubics {
 	background-repeat: no-repeat;
 }
 
-.c-cb:hover {
+.c-hb:hover {
 	background-image: url(../images/chart.png);
+}
+
+.c-pb {	/* cubics-pie-button */
+	cursor: pointer;
+	width: 20px;
+	height: 16px;
+	padding-left: 20px;
+	background-image: url(../images/pie-chart-gray.png);
+	background-repeat: no-repeat;
+}
+
+.c-pb:hover {
+	background-image: url(../images/pie-chart.png);
 }
 
 .c-cd { /* cubics-chart-data */

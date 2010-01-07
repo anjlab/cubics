@@ -14,6 +14,8 @@ import anjlab.cubics.Hierarchy;
 import anjlab.cubics.JSONSerializable;
 import anjlab.cubics.Key;
 import anjlab.cubics.Totals;
+import anjlab.cubics.aggregate.histogram.Histogram;
+import anjlab.cubics.aggregate.pie.Pie;
 
 
 /**
@@ -231,7 +233,11 @@ public class HtmlRender<T> {
 				if (value instanceof JSONSerializable) {
 					insert(delta, "'");
 					insert(delta, " data-json='", ((JSONSerializable)value).toJSON(), "'>");
-					insert(delta, "<a class='c-cb'/>");
+					if (value instanceof Pie) {
+						insert(delta, "<a class='c-pb'/>");
+					} else if (value instanceof Histogram) {
+						insert(delta, "<a class='c-hb'/>");
+					}
 				} else {
 					insert(delta, "'>", formatValue(value, options.getFormat(aggregate)));
 				}
