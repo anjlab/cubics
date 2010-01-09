@@ -227,6 +227,7 @@ public class HtmlRender<T> {
 				}
 				
 				index = insertCssClass(delta, path, index, forTotals, false, "c-ne", value instanceof Number ? "c-n" : "c-cd");
+				insert(delta, " c-m");
 				insert(delta, " m-", aggregateIndex);
 				insert(delta, " i", parentId);
 

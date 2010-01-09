@@ -80,3 +80,18 @@ table.cubics {
 
 .c-cd { /* cubics-chart-data */
 }
+
+.c-sm { /* cubics-selected-measure */
+	background-color: #999;
+}
+
+.c-sh { /* cubics-selected-header */
+	background-color: #999 !important;
+}
+
+.c-sd { /* cubics-selected-dimension */
+	background-color: #999;
+}
+
+.c-m { /* cubics-measure-cell */
+}
