@@ -84,18 +84,25 @@ public class HtmlRender<T> {
 		
 		Options<T> aggregatesOptions;
 		
+		int hm = 0;
 		for (String measure : measuresOptions.getAttributes()) {
 			aggregatesOptions = getAggregatesOptions(measure);
-			append("<th colspan='", aggregatesOptions.getAttributes().size(), 
-					"'>", measuresOptions.getLabel(measure), "</th>");
+			append("<th colspan='", aggregatesOptions.getAttributes().size(),
+					"' id='hm-", hm, "'>", measuresOptions.getLabel(measure), "</th>");
+			hm++;
 		}
 		append("</tr>\n");
 		append("<tr>\n");
+		int am = 0;
+		hm = 0;
 		for (String measure : measuresOptions.getAttributes()) {
 			aggregatesOptions = getAggregatesOptions(measure);
 			for (String aggregate : aggregatesOptions.getAttributes()) {
-				append("<th>", aggregatesOptions.getLabel(aggregate), "</th>");
+				append("<th class='am-", am, " hm-", hm, "'>");
+				append(aggregatesOptions.getLabel(aggregate), "</th>");
+				am++;
 			}
+			hm++;
 		}
 		append("</tr>\n");
 		
