@@ -44,7 +44,7 @@ function toggleHierarchy($td, expanding, force) {
 }
 
 $(document).ready(function() {
-	$("td").click(function() {
+	$(".cubics td").click(function() {
 		var $this = $(this);
 		
 		var needToShow = $this.is(".c-c");

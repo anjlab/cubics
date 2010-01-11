@@ -274,8 +274,7 @@ public class HtmlRender<T> {
 			: path;
 			
 		insert(delta, "class='", path, "-", index, 
-				" ", parentClass, 
-				parentClass.length() == 0 ? "" : " ", "c-e");
+				(parentClass.length() == 0 ? "" : " "), parentClass);
 		
 		if (additionalCssClasses != null) {
 			for (String cssClass : additionalCssClasses) {
