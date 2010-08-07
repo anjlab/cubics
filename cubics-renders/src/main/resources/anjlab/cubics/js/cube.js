@@ -1,9 +1,9 @@
 function collapseAll() {
-	toggle($('.x'), false, true);
+	toggle(jQuery('.x'), false, true);
 }
 
 function expandAll() {
-	toggle($('.x'), true, true);
+	toggle(jQuery('.x'), true, true);
 }
 
 function toggle($this, expand, force) {
@@ -21,13 +21,13 @@ function toggle($this, expand, force) {
 function toggleHierarchy($td, expanding, force) {
 	var thisClass = $td.attr("class").split(' ')[0];
 	
-	$("." + thisClass).each(function() {
+	jQuery("." + thisClass).each(function() {
 		
 		if ($td[0] == this) {
 			return;
 		}
 
-		var $this = $(this);
+		var $this = jQuery(this);
 		
 		if (expanding) {
 			$this.show();
@@ -43,9 +43,9 @@ function toggleHierarchy($td, expanding, force) {
 	});
 }
 
-$(document).ready(function() {
-	$(".cubics td").click(function() {
-		var $this = $(this);
+jQuery(document).ready(function() {
+	jQuery(".cubics td").click(function() {
+		var $this = jQuery(this);
 		
 		var needToShow = $this.is(".c-c");
 		
@@ -55,23 +55,23 @@ $(document).ready(function() {
 
 function collapseOne() {
 	//	Collapse all expanded leafs that don't have (expanded) children
-	$(".c-e:not('.c-ne.c-t')").filter(function() {
-		var $next = $(this).next();
+	jQuery(".c-e:not('.c-ne.c-t')").filter(function() {
+		var $next = jQuery(this).next();
 	    return $next.is(".c-c") 
 	        || $next.is(".c-t") 
 	        || $next.is(".c-ne");
 	}).each(function() {
-		toggle($(this), false, false);
+		toggle(jQuery(this), false, false);
 	});
 }
 
 function expandOne() {
 	//	Expand all collapsed leafs which parents are expanded
-	$(".c-c:not('.c-ne.c-t')").filter(function() {
-        var classes = $(this).attr("class").split(' ');
+	jQuery(".c-c:not('.c-ne.c-t')").filter(function() {
+        var classes = jQuery(this).attr("class").split(' ');
         return classes[0] == 'x' 
-        	|| ($('#i' + classes[1]).is(".c-e"));
+        	|| (jQuery('#i' + classes[1]).is(".c-e"));
 	}).each(function() {
-		toggle($(this), true, false);
+		toggle(jQuery(this), true, false);
 	});
 }
