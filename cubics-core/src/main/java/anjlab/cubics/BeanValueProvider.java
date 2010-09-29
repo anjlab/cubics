@@ -1,19 +1,21 @@
 package anjlab.cubics;
 
-import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 
 /**
- * POJO helper class.
+ * POJO value provider.
+ * 
+ * Fact attributes are POJO fields.
  * 
  * @author dmitrygusev
  *
  * @param <T> Type of the POJO class.
+ * 
  */
-public class BeanClass<T> implements Serializable {
+public class BeanValueProvider<T> implements FactValueProvider<T> {
 
 	/**
 	 * 
@@ -23,7 +25,11 @@ public class BeanClass<T> implements Serializable {
 	private Class<T> beanClass;
 	private transient Map<String, Method> methods;
 	
-	public BeanClass(Class<T> beanClass) {
+	/**
+	 * 
+	 * @param beanClass {@link Class} of the fact class.
+	 */
+	public BeanValueProvider(Class<T> beanClass) {
 		this.beanClass = beanClass;
 	}
 
@@ -51,6 +57,9 @@ public class BeanClass<T> implements Serializable {
 		return false;
 	}
 
+	/* (non-Javadoc)
+     * @see anjlab.cubics.FactValueProvider#getValue(java.lang.String, T)
+     */
 	public Object getValue(String property, T instance) {
 		try {
 			return getMethods().get(property.toLowerCase()).invoke(instance);

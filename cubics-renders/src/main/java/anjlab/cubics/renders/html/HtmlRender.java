@@ -1,14 +1,13 @@
-package anjlab.cubics.renders;
+package anjlab.cubics.renders.html;
 
-import java.util.ArrayList;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import anjlab.cubics.Aggregate;
 import anjlab.cubics.Cube;
-import anjlab.cubics.CustomAggregateFactory;
 import anjlab.cubics.DataCollector;
 import anjlab.cubics.Hierarchy;
 import anjlab.cubics.JSONSerializable;
@@ -16,58 +15,36 @@ import anjlab.cubics.Key;
 import anjlab.cubics.Totals;
 import anjlab.cubics.aggregate.histogram.Histogram;
 import anjlab.cubics.aggregate.pie.Pie;
+import anjlab.cubics.renders.AbstractRender;
+import anjlab.cubics.renders.NaturalKeyComparator;
+import anjlab.cubics.renders.Options;
 
 
 /**
- * {@link Cube} html render.
+ * {@link Cube} HTML render.
  *  
  * @author dmitrygusev
  *
  */
-public class HtmlRender<T> {
+public class HtmlRender<T> extends AbstractRender<T, StringBuilder> {
 
-	private final NaturalKeyComparator comparator = new NaturalKeyComparator();
-
-	private Cube<T> cube;
-
-	private String[] dimensions;
+	private final NaturalKeyComparator comparator;
 
 	private StringBuilder builder;
 
-	private Map<String, Options<T>> aggregatesOptions;
-	private Options<T> measuresOptions;
-	private Options<T> dimensionsOptions;
 	
 	/**
 	 * 
 	 * @param cube Cube to render.
 	 */
 	public HtmlRender(Cube<T> cube) {
-		this.cube = cube;
-		this.dimensions = cube.getModel().getDimensions();
-
-		String[] measures = cube.getModel().getMeasures();
-
-		this.aggregatesOptions = new HashMap<String, Options<T>>(measures.length);
-		this.measuresOptions = createOptions(toList(measures));
-		this.dimensionsOptions = createOptions(toList(dimensions, "all"));
-	}
-
-	private static <T> List<T> toList(T[] array, T... more) {
-		List<T> result = new ArrayList<T>(array.length);
-		result.addAll(Arrays.asList(array));
-		if (more != null && more.length > 0) {
-			result.addAll(Arrays.asList(more));
-		}
-		return result;
-	}
-	
-	private Options<T> createOptions(List<String> attributes) {
-		return new Options<T>(attributes, null);
+	    super(cube);
+	    
+	    this.comparator = new NaturalKeyComparator();
 	}
 
 	/**
-	 * Renders <code>cube</code> instance into HTML layout.
+	 * {@inheritDoc}
 	 * 
 	 * @return HTML representation of the cube.
 	 */
@@ -144,10 +121,14 @@ public class HtmlRender<T> {
 			if (lastChild) {
 				//	XXX for now this is the only string concatenation, remove this in future releases
 				parentId = path + "-" + index;
-				append("id='i", parentId, '"');
+				append(" id='i", parentId, '\'');
 			}
 			
-			append(" rowspan='", (dimension.get(key).getSizeWithTotals() - 1), "'>");
+			int rowspan = dimension.get(key).getSizeWithTotals() - 1;
+			if (rowspan > 1) {
+			    append(" rowspan='", rowspan, "'");
+			}
+			append(">");
 			append(dimension.get(key).getDimensionValue());
 			append("</td>");
 			if (lastChild) {
@@ -155,7 +136,10 @@ public class HtmlRender<T> {
 				colspan = dimensions.length - (level + 1);
 				append("\n<tr><td ");
 				index = appendCssClass(path, index, "c-t");
-				append(" colspan='", colspan, "'>Totals:</td>");
+				if (colspan > 1) {
+				    append(" colspan='", colspan, "'");
+				}
+				append(">Totals:</td>");
 				index = renderTotals(0, dimension.get(key).getTotals(), path, index, false, parentId);
 				append("</tr>");
 				append("\n<tr>");
@@ -179,7 +163,10 @@ public class HtmlRender<T> {
 				true,
 				"c-t");
 		colspan = dimensions.length - level;
-		insert(offsetFromEnd, " colspan='", colspan, "'>Totals:</td></tr>");
+		if (colspan > 1) {
+		    insert(offsetFromEnd, " colspan='", colspan, "'");
+		}
+		insert(offsetFromEnd, ">Totals:</td></tr>");
 		index = renderTotals(offsetFromEnd + "\n<tr>".length(), hierarchy.getTotals(), path, index, 
 				true /* set this to true to make totals collapsed only with parent dimension */,
 				path);
@@ -216,7 +203,7 @@ public class HtmlRender<T> {
 								} else {
 									throw new RuntimeException(
 											"Unsupported option \"" + parts[2] + "\" in aggregate specification \"" 
-											+ aggregate + "\". Should be \"%\" or \"!\".");
+											+ aggregate + "\". Could be \"%\" or \"!\".");
 								}
 							} else if (parts.length == 2) {
 								value = intValue;
@@ -319,58 +306,26 @@ public class HtmlRender<T> {
 		}
 	}
 
-	/**
-	 * Gets {@link Options} instance that controls aggregates appearance 
-	 * of the specified <code>measure</code>.
-	 * 
-	 * @param measure Measure name.
-	 * @return Options for <code>measure</code>
-	 */
-	public Options<T> getAggregatesOptions(String measure) {
-		if (! aggregatesOptions.containsKey(measure)) {
-			List<String> names = new ArrayList<String>();
-			names.addAll(Arrays.asList(Aggregate.getNames()));
-			
-			List<String> formats = new ArrayList<String>();
-			formats.addAll(Arrays.asList(Aggregate.getFormats()));
-
-			List<CustomAggregateFactory<T>> factories = 
-				cube.getModel().getCustomAggregateFactories().get(measure);
-
-			if (factories != null) {
-				for (CustomAggregateFactory<T> factory : factories) {
-					names.add(factory.getAggregateName());
-					formats.add(factory.getFormat());
-				}
-			}
-			
-			aggregatesOptions.put(measure, new Options<T>(names, formats));
-		}
-		return aggregatesOptions.get(measure);
-	}
-
-	/**
-	 * Gets {@link Options} instance that controls measures appearance.
-	 * 
-	 * {@link Options#setFormat(String, String)} is ignored by render.
-	 * 
-	 * @return Options for measures.
-	 */
-	public Options<T> getMeasuresOptions() {
-		return measuresOptions;
-	}
-
-	/**
-	 * Gets {@link Options} instance that controls dimensions appearance.
-	 * 
-	 * {@link Options#setFormat(String, String)} is ignored by render.
-	 * {@link Options#reorder(String...)} is ignored by render.
-	 * {@link Options#exclude(String...)} is ignored by render.
-	 * 
-	 * @return Options for dimensions.
-	 */
-	public Options<T> getDimensionsOptions() {
-		return dimensionsOptions;
-	}
+    public static String saveToHTMLFile(StringBuilder builder, String filename, String cubicsResources, String jquery)
+    		throws FileNotFoundException, IOException {
+    	builder.insert(0, "<a href='javascript:expandAll();'>Expand All</a>&nbsp;");
+    	builder.insert(0, "<a href='javascript:expandOne();'>More &#xBB;</a>&nbsp;");
+    	builder.insert(0, "<a href='javascript:collapseOne();'>&#xAB; Less</a>&nbsp;");
+    	builder.insert(0, "<a href='javascript:collapseAll();'>Collapse All</a>&nbsp;");
+    	builder.insert(0, "<body>");
+    	builder.insert(0, "<style> td { vertical-align:top; } </style>\n");
+    	builder.insert(0, "<script src='" + cubicsResources + "js/cube.js'></script>");
+    	builder.insert(0, "<script src='" + jquery + "'></script>");
+    	builder.insert(0, "<link rel='stylesheet' href='" + cubicsResources + "css/cube.css' type='text/css'>");
+    	builder.insert(0, "<html>");
+    	String html = builder.toString();
+    	builder.append("<div id='debug'></div>");
+    	builder.append("</body></html>");
+    	
+    	FileOutputStream fos = new FileOutputStream(filename);
+    	fos.write(builder.toString().getBytes());
+    	fos.close();
+    	return html;
+    }
 
 }

@@ -23,59 +23,52 @@ public class FactModel<T> implements Serializable {
 	
 	private String[] dimensions;
 	private String[] measures;
-	private BeanClass<T> beanClass;
+	private FactValueProvider<T> valueProvider;
 	private Map<String, List<CustomAggregateFactory<T>>> aggregateFactories;
+	private Map<String, Calculator<T>> calculatedAttributes;
 	
 	/**
 	 * Creates new instance of fact model.
 	 * 
-	 * @param beanClass {@link Class} of the fact class.
+	 * @param valueProvider Fact attributes value provider for this model.
 	 */
-	public FactModel(Class<T> beanClass) {
-		this.beanClass = new BeanClass<T>(beanClass);
+	public FactModel(FactValueProvider<T> valueProvider) {
+		this.valueProvider = buildValueProviderForModel(valueProvider);
 		this.aggregateFactories = new HashMap<String, List<CustomAggregateFactory<T>>>();
+		this.calculatedAttributes = new HashMap<String, Calculator<T>>();
+	}
+
+	private FactValueProvider<T> buildValueProviderForModel(final FactValueProvider<T> valueProvider) { 
+	    return new FactValueProvider<T>()
+	    {
+    	    /**
+             * 
+             */
+            private static final long serialVersionUID = 2115193193687564221L;
+
+            public Object getValue(String attribute, T instance) {
+                Calculator<T> calculator;
+                if (calculatedAttributes.size() > 0 
+                    && (calculator = calculatedAttributes.get(attribute)) != null) {
+                    //  Pass 'this' as parameter so that calculators could 
+                    //  use values of another calculated attributes
+                    return calculator.calculate(this, instance);
+                }
+    	        return valueProvider.getValue(attribute, instance);
+    	    };
+        };
 	}
 	
 	/**
-	 * Sets the names of dimensions.
-	 * 
-	 * The order is meaning, it defines the dimensions hierarchy.
-	 * 
-	 * @param names Names of the dimensions.
+	 * Provides access to value provider of this model.
+	 * Returned instance provides access to fact attributes as well as calculated attributes.
+	 * In case of attributes name collision, this provider return value of calculated attribute.
+	 *  
+	 * @return
+	 *     Returns value provider for this model.
 	 */
-	public void setDimensions(String... names) {
-		this.dimensions = names;
-	}
-
-	/**
-	 * Sets the names of measures.
-	 * 
-	 * @param names Names of measures.
-	 */
-	public void setMeasures(String... names) {
-		this.measures = names;
-	}
-
-	/**
-	 * Gets model dimensions.
-	 * 
-	 * @return Returns model dimensions.
-	 */
-	public String[] getDimensions() {
-		return dimensions;
-	}
-
-	/**
-	 * Gets model measures.
-	 * 
-	 * @return Returns model measures.
-	 */
-	public String[] getMeasures() {
-		return measures;
-	}
-
-	public BeanClass<T> getBeanClass() {
-		return beanClass;
+	public FactValueProvider<T> getValueProvider() {
+		return valueProvider;
 	}
 
 	/**
@@ -99,4 +92,47 @@ public class FactModel<T> implements Serializable {
 	public Map<String, List<CustomAggregateFactory<T>>> getCustomAggregateFactories() {
 		return aggregateFactories;
 	}
+
+    public void declareCalculatedAttribute(String attribute, Calculator<T> calculator) {
+        calculatedAttributes.put(attribute, calculator);
+    }
+    
+    /**
+     * Sets the names of dimensions.
+     * 
+     * The order is meaning, it defines the dimensions hierarchy.
+     * 
+     * @param names Names of the dimensions.
+     */
+    public void setDimensions(String... names) {
+        this.dimensions = names;
+    }
+
+    /**
+     * Sets the names of measures.
+     * 
+     * @param names Names of measures.
+     */
+    public void setMeasures(String... names) {
+        this.measures = names;
+    }
+
+    /**
+     * Gets model dimensions.
+     * 
+     * @return Returns model dimensions.
+     */
+    public String[] getDimensions() {
+        return dimensions;
+    }
+
+    /**
+     * Gets model measures.
+     * 
+     * @return Returns model measures.
+     */
+    public String[] getMeasures() {
+        return measures;
+    }
+
 }

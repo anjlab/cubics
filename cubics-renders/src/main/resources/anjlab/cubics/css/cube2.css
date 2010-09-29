@@ -1,0 +1,127 @@
+table.cubics td { 
+	vertical-align: top; 
+	padding-bottom: 0px;
+}
+
+table.cubics th { 
+	vertical-align: top; 
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	background-color: #ccc;
+	padding: 4px;
+}
+
+table.cubics {
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	border-collapse: collapse;
+}
+
+.c-e, .c-c, .c-t, .c-ne, .c-m, .c-et, .c-d {
+    border: 1px solid #ccc;
+}
+
+.c-e /* cubics-expanded */, 
+.c-c /* cubics-collapsed  */ { 
+    padding-left: 20px;
+    padding-right: 5px; 
+    background-repeat: no-repeat;
+    background-position: 5px 4px;
+    cursor: pointer;
+    border-bottom: none;
+    border-left: none;
+}
+
+.c-e { background-image: url(../images/expanded.png); }
+.c-c { background-image: url(../images/collapsed.png); }
+
+.c-t /* cubics-totals */, 
+.c-ne /* cubics-not-expandable */ { 
+	background-image: none; 
+	padding-left: 2px;
+	cursor: default;
+	border-left: none;
+    border-bottom: none;
+}
+
+.c-d { /* cubics-dimension-cell */
+    border-left: none;
+    border-bottom: none;
+    border-top: none;
+    empty-cells: show;
+    cursor: pointer;
+}
+
+.c-t {
+	font-weight: bold;
+	text-align: right;
+}
+
+.c-n { /* cubics-number */
+	text-align: right;
+}
+
+.c-a { /* cubics-aggregate */
+}
+
+.c-hb {	/* cubics-histogram-button */
+	cursor: pointer;
+	width: 16px;
+	height: 16px;
+	padding-left: 16px;
+	background-image: url(../images/chart-gray.png);
+	background-repeat: no-repeat;
+}
+
+.c-hb:hover {
+	background-image: url(../images/chart.png);
+}
+
+.c-pb {	/* cubics-pie-button */
+	cursor: pointer;
+	width: 20px;
+	height: 16px;
+	padding-left: 20px;
+	background-image: url(../images/pie-chart-gray.png);
+	background-repeat: no-repeat;
+}
+
+.c-pb:hover {
+	background-image: url(../images/pie-chart.png);
+}
+
+.c-cd { /* cubics-chart-data */
+}
+
+.c-sm { /* cubics-selected-measure */
+	background-color: #999;
+}
+
+.c-sh { /* cubics-selected-header */
+	background-color: #999 !important;
+}
+
+.c-sd { /* cubics-selected-dimension */
+	background-color: #999;
+}
+
+.c-m { /* cubics-measure-cell */
+	border-left: none;
+}
+
+.c-et { /* cubics-empty-cell */
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    empty-cells: show;
+}
+
+.c-0, .c-1, .c-2, .c-3, .c-4,
+.c-5, .c-6, .c-7, .c-8, .c-9,
+.c-10, .c-11, .c-12, .c-13, .c-14 { /* cubics hierarchy levels */
+    display: none;
+}

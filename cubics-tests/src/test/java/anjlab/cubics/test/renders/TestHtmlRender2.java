@@ -11,12 +11,12 @@ import anjlab.cubics.aggregate.histogram.HistogramAggregateFactory;
 import anjlab.cubics.aggregate.histogram.Histogram.HistogramMergeStrategy;
 import anjlab.cubics.aggregate.pie.PieAggregateFactory;
 import anjlab.cubics.coerce.IntegerCoercer;
-import anjlab.cubics.renders.html.HtmlRender;
+import anjlab.cubics.renders.html.HtmlRender2;
 import anjlab.cubics.test.Fact;
 import anjlab.cubics.test.TestHelper;
 
 
-public class TestHtmlRender {
+public class TestHtmlRender2 {
 
 	@Test
 	public void renderCube() throws Exception {
@@ -24,13 +24,13 @@ public class TestHtmlRender {
 		Iterable<Fact> facts = TestHelper.createTestFacts();
 		Cube<Fact> c = Cube.createCube(model, facts);
 		
-		HtmlRender<Fact> render = new HtmlRender<Fact>(c);
+		HtmlRender2<Fact> render = new HtmlRender2<Fact>(c);
 		
 		StringBuilder builder = render.render();
 		assertNotNull(builder);
 
-		String html = HtmlRender.saveToHTMLFile(builder, 
-		        "target/index.html",
+		String html = HtmlRender2.saveToHTMLFile(builder, 
+		        "target/index2.1.html",
                 "../../cubics-renders/src/main/resources/anjlab/cubics/",
 		        "../src/test/resources/jquery-1.4.2.min.js");
 		
@@ -44,7 +44,7 @@ public class TestHtmlRender {
 		Iterable<Fact> facts = TestHelper.createTestFacts();
 		Cube<Fact> c = Cube.createCube(model, facts);
 		
-		HtmlRender<Fact> render = new HtmlRender<Fact>(c);
+		HtmlRender2<Fact> render = new HtmlRender2<Fact>(c);
 
 		render.getAggregatesOptions("succeeded").
 			reorder("count").
@@ -63,8 +63,8 @@ public class TestHtmlRender {
 		StringBuilder builder = render.render();
 		assertNotNull(builder);
 		
-        String html = HtmlRender.saveToHTMLFile(builder, 
-                "target/index2.html",
+        String html = HtmlRender2.saveToHTMLFile(builder, 
+                "target/index2.2.html",
                 "../../cubics-renders/src/main/resources/anjlab/cubics/",
                 "../src/test/resources/jquery-1.4.2.min.js");
 		
@@ -85,7 +85,7 @@ public class TestHtmlRender {
 		Iterable<Fact> facts = TestHelper.createTestFacts();
 		Cube<Fact> c = Cube.createCube(model, facts);
 		
-		HtmlRender<Fact> render = new HtmlRender<Fact>(c);
+		HtmlRender2<Fact> render = new HtmlRender2<Fact>(c);
 
 		render.getAggregatesOptions("succeeded").
 			add("pie-1-%").
@@ -99,8 +99,8 @@ public class TestHtmlRender {
 		StringBuilder builder = render.render();
 		assertNotNull(builder);
 		
-        String html = HtmlRender.saveToHTMLFile(builder, 
-                "target/index3.html",
+        String html = HtmlRender2.saveToHTMLFile(builder, 
+                "target/index2.3.html",
                 "../../cubics-renders/src/main/resources/anjlab/cubics/",
                 "../src/test/resources/jquery-1.4.2.min.js");
 		
@@ -112,14 +112,14 @@ public class TestHtmlRender {
 		FactModel<Fact> model = TestHelper.createFactModel();
 		Cube<Fact> c = Cube.createCube(model);
 		
-		HtmlRender<Fact> render = new HtmlRender<Fact>(c);
+		HtmlRender2<Fact> render = new HtmlRender2<Fact>(c);
 		
 		StringBuilder builder = render.render();
 		assertNotNull(builder);
 		assertTrue("Rendering failed", builder.toString().endsWith("</tr></table>"));
 		
-        String html = HtmlRender.saveToHTMLFile(builder, 
-                "target/index4.html",
+        String html = HtmlRender2.saveToHTMLFile(builder, 
+                "target/index2.4.html",
                 "../../cubics-renders/src/main/resources/anjlab/cubics/",
                 "../src/test/resources/jquery-1.4.2.min.js");
 		

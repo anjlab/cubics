@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import anjlab.cubics.BeanValueProvider;
 import anjlab.cubics.FactModel;
 import anjlab.cubics.aggregate.histogram.Histogram;
 import anjlab.cubics.aggregate.histogram.HistogramAggregate;
@@ -32,7 +33,7 @@ public class TestHelper {
 	}
 
 	public static FactModel<Fact> createFactModel() {
-		FactModel<Fact> model = new FactModel<Fact>(Fact.class);
+		FactModel<Fact> model = new FactModel<Fact>(new BeanValueProvider<Fact>(Fact.class));
 		model.setDimensions("year", "month", "day", "hour");
 		model.setMeasures("duration", "succeeded");
 		return model;
@@ -52,7 +53,7 @@ public class TestHelper {
 	}
 
 	public static FactModel<Fact> createFactModel2() {
-		FactModel<Fact> model = new FactModel<Fact>(Fact.class);
+		FactModel<Fact> model = new FactModel<Fact>(new BeanValueProvider<Fact>(Fact.class));
 		model.setDimensions("month");
 		model.setMeasures("duration", "succeeded");
 		return model;

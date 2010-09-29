@@ -3,6 +3,7 @@ package anjlab.cubics.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 
@@ -244,10 +245,14 @@ public class TestCubics {
 		
 		assertEquals(0, root.getChildren().size());
 		
-		Iterable<Fact> facts = TestHelper.createTestFacts();		
+		Iterable<Fact> facts = TestHelper.createTestFacts();
 		
-		c.addFact(facts.iterator().next());
-		
-		assertEquals(1, root.getChildren().size());
+		try {
+		    c.addFact(facts.iterator().next());
+		    
+		    fail("Can not add facts to cube aftet its been calculated, because totals has aleady been merged");
+		} catch (IllegalStateException e) {
+		    assertEquals("The cube has already been calculated.", e.getMessage());
+		}
 	}
 }

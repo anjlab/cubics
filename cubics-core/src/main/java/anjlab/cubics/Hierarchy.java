@@ -46,6 +46,7 @@ public class Hierarchy<T> implements Serializable {
 		for (Hierarchy<T> child : children.values()) {
 			child.mergeTotals();
 			totals.merge(child.totals);
+			child.parent = this;
 		}
 	}
 
@@ -82,7 +83,7 @@ public class Hierarchy<T> implements Serializable {
 	public void addFact(T fact) {
 		for (String measure : cube.getModel().getMeasures()) {
 			totals.getAggregate(measure).add(
-						cube.getModel().getBeanClass().getValue(measure, fact));
+						cube.getModel().getValueProvider().getValue(measure, fact));
 		}
 	}
 

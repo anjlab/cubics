@@ -1,6 +1,8 @@
 package anjlab.cubics;
 
 import java.io.Serializable;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,7 +11,7 @@ import java.util.Map;
  *
  * @author dmitrygusev
  *
- * @param <T> Type of the fact bean.
+ * @param <T> Type of the fact record.
  */
 public class Cube<T> implements Serializable {
 
@@ -18,18 +20,38 @@ public class Cube<T> implements Serializable {
 	 */
 	private static final long serialVersionUID = 3761391818016806526L;
 	
-	private FactModel<T> model;
+	private final FactModel<T> model;
 	private Map<String, Map<Key, Hierarchy<T>>> dimensions;
-	private BeanClass<T> beanClass;
-		
+	private final FactValueProvider<T> valueProvider;
+	
+	private static final Map<String, Integer> calendarFields = buildCalendarFields();
+    private static final ThreadLocal<Calendar> calendar = getCalendar();
+	
 	private Cube(FactModel<T> model, Iterable<T> facts) {
 		this.model = model;
-		this.beanClass = model.getBeanClass();
+		this.valueProvider = model.getValueProvider();
 		initDimensions(model);
 		calculateCube(facts);
 	}
 
-	private void calculateCube(Iterable<T> facts) {
+	private static ThreadLocal<Calendar> getCalendar() {
+	    ThreadLocal<Calendar> calendar = new ThreadLocal<Calendar>();
+        calendar.set(Calendar.getInstance());
+        return calendar;
+    }
+
+    private static Map<String, Integer> buildCalendarFields() {
+        Map<String, Integer> calendarFields = new HashMap<String, Integer>(7);
+        calendarFields.put("y", Calendar.YEAR);
+        calendarFields.put("M", Calendar.MONTH);
+        calendarFields.put("d", Calendar.DATE);
+        calendarFields.put("H", Calendar.HOUR_OF_DAY);
+        calendarFields.put("m", Calendar.MINUTE);
+        calendarFields.put("s", Calendar.SECOND);
+        return calendarFields;
+    }
+
+    private void calculateCube(Iterable<T> facts) {
 		if (facts == null) {
 			return;
 		}
@@ -40,11 +62,35 @@ public class Cube<T> implements Serializable {
 	}
 
 	public void addFact(T fact) {
+	    if (root != null) {
+	        throw new IllegalStateException("The cube has already been calculated.");
+	    }
+	    
 		boolean increaseRequired = false;
 		
 		Hierarchy<T> parentHierarchy = null;
 		for (String dimensionName : model.getDimensions()) {
-			Object dimensionValue = beanClass.getValue(dimensionName, fact);
+		    Object dimensionValue;
+		    
+		    if (dimensionName.contains("-")) {
+		        String[] parts = dimensionName.split("-");
+		        Object value = valueProvider.getValue(parts[0], fact);
+		        
+		        if (value instanceof Date) {
+		            calendar.get().setTime((Date) value);
+		            Integer calendarField = getCalendarField(parts[1]);
+		            if (calendarField == null) {
+		                throw new RuntimeException(
+		                        "Unsupported option \"" + parts[1] + "\" in dimension specification \"" 
+                                + dimensionName + "\". Could be one of " + calendarFields.keySet() + ".");
+		            }
+                    dimensionValue = calendar.get().get(calendarField);
+		        } else {
+		            dimensionValue = valueProvider.getValue(dimensionName, fact);
+		        }
+		    } else {
+		        dimensionValue = valueProvider.getValue(dimensionName, fact);
+		    }
 
 			Map<Key, Hierarchy<T>> slice = this.dimensions.get(dimensionName);
 
@@ -80,7 +126,11 @@ public class Cube<T> implements Serializable {
 		}
 	}
 
-	private void initDimensions(FactModel<T> model) {
+    private Integer getCalendarField(String fieldName) {
+        return calendarFields.get(fieldName);
+    }
+
+    private void initDimensions(FactModel<T> model) {
 		this.dimensions = new HashMap<String, Map<Key, Hierarchy<T>>>(model.getDimensions().length);
 		for (String dimension : model.getDimensions()) {
 			this.dimensions.put(dimension, new HashMap<Key, Hierarchy<T>>());
@@ -112,7 +162,9 @@ public class Cube<T> implements Serializable {
 	 * @return New cube.
 	 */
 	public static <T> Cube<T> createCube(FactModel<T> model) {
-		return createCube(model, null);
+        Cube<T> cube = new Cube<T>(model, null);
+        
+        return cube;
 	}
 
 	private Hierarchy<T> root;

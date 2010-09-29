@@ -58,10 +58,11 @@ public class Aggregate<T> implements Serializable {
 	}
 
 	public void add(Object value) {
-		if (value != null && value instanceof Number) {
+        count++;
+
+        if (value != null && value instanceof Number) {
 			processNumber(value);
 		}
-		
 		if (customAggregates != null) {
 			for (CustomAggregate<T> aggregate : customAggregates.values()) {
 				aggregate.add(this, value);
@@ -71,8 +72,6 @@ public class Aggregate<T> implements Serializable {
 
 	private void processNumber(Object value) {
 		double doubleValue = ((Number) value).doubleValue();
-
-		count++;
 
 		if (Double.isNaN(average)) {
 			average = doubleValue;

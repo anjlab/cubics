@@ -28,7 +28,7 @@ function toggleHierarchy($td, expanding, force) {
 		}
 
 		var $this = jQuery(this);
-		
+
 		if (expanding) {
 			$this.show();
 		} else {
@@ -44,7 +44,7 @@ function toggleHierarchy($td, expanding, force) {
 }
 
 jQuery(document).ready(function() {
-	jQuery(".cubics td").click(function() {
+	jQuery(".cubics td[rowspan]").click(function() {
 		var $this = jQuery(this);
 		
 		var needToShow = $this.is(".c-c");

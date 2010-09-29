@@ -4,14 +4,15 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import anjlab.cubics.BeanClass;
+import anjlab.cubics.BeanValueProvider;
+import anjlab.cubics.FactValueProvider;
 
 
-public class TestBeanClass {
+public class TestBeanValueProvider {
 
 	@Test
 	public void readFields() {
-		BeanClass<Fact> beanClass = new BeanClass<Fact>(Fact.class);
+		FactValueProvider<Fact> beanClass = new BeanValueProvider<Fact>(Fact.class);
 		
 		Fact fact = new Fact(1, 2, 3, 4, 5, 6);
 		
