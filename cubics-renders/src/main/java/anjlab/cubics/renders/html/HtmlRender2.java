@@ -165,7 +165,6 @@ public class HtmlRender2<T> extends AbstractRender<T, StringBuilder> {
 
 			if (lastChild) {
 				parentId = path.addPart(String.valueOf(index));
-				append(" id='i", parentId, '\'');
 			}
 			
 			int rowspan = dimension.get(key).getSizeWithTotals() - 1;
@@ -382,8 +381,8 @@ public class HtmlRender2<T> extends AbstractRender<T, StringBuilder> {
     	builder.insert(0, "<style> td { vertical-align:top; } </style>\n");
     	builder.insert(0, "<script src='" + cubicsResources + "js/cube2.js'></script>");
     	builder.insert(0, "<script src='" + jquery + "'></script>");
-    	builder.insert(0, "<link rel='stylesheet' href='" + cubicsResources + "css/cube2.css' type='text/css'>");
-    	builder.insert(0, "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>");
+    	builder.insert(0, "<link rel='stylesheet' href='" + cubicsResources + "css/cube2.css' type='text/css'/>");
+    	builder.insert(0, "<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'/>");
     	builder.insert(0, "<html>");
     	String html = builder.toString();
     	builder.append("<div id='debug'></div>");

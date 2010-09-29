@@ -84,7 +84,7 @@ function toggle($td, expand, force) {
             if ($td2.is(":visible")) {
                 $td2.hide();
             }
-        } else if (expand) {
+        } else {
             if (!$td2.is(":visible")) {
                 $td2.show();
             }

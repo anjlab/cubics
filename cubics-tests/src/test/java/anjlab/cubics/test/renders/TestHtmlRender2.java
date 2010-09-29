@@ -1,7 +1,13 @@
 package anjlab.cubics.test.renders;
 
-import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.Test;
 
@@ -35,6 +41,8 @@ public class TestHtmlRender2 {
 		        "../src/test/resources/jquery-1.4.2.min.js");
 		
 		System.out.println(html);
+		
+		assertWellFormedXML(builder);
 	}
 
 	@Test
@@ -70,6 +78,7 @@ public class TestHtmlRender2 {
 		
 		System.out.println(html);
 
+		assertWellFormedXML(builder);
 	}
 	
 	@Test
@@ -105,6 +114,8 @@ public class TestHtmlRender2 {
                 "../src/test/resources/jquery-1.4.2.min.js");
 		
 		System.out.println(html);
+		
+		assertWellFormedXML(builder);
 	}
 
 	@Test
@@ -116,7 +127,6 @@ public class TestHtmlRender2 {
 		
 		StringBuilder builder = render.render();
 		assertNotNull(builder);
-		assertTrue("Rendering failed", builder.toString().endsWith("</tr></table>"));
 		
         String html = HtmlRender2.saveToHTMLFile(builder, 
                 "target/index2.4.html",
@@ -124,6 +134,30 @@ public class TestHtmlRender2 {
                 "../src/test/resources/jquery-1.4.2.min.js");
 		
 		System.out.println(html);
+		
+		assertWellFormedXML(builder);
 	}
+
+    private static void assertWellFormedXML(StringBuilder builder) {
+        String s = builder.toString().replaceAll("&nbsp;", "&#160;");
+        InputStream inputStream = new ByteArrayInputStream(s.getBytes());
+
+        try
+        {
+            getDocumentBuilder().parse(inputStream);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    private static DocumentBuilder documentBuilder;
+
+    private static DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
+        if (documentBuilder == null) {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            documentBuilder = factory.newDocumentBuilder();
+        }
+        return documentBuilder;
+    }
 
 }
