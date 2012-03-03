@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>anjlab</groupId>
+	<groupId>com.anjlab.cubics</groupId>
 	<artifactId>cubics</artifactId>
 	<packaging>pom</packaging>
 	<version>1.1.0</version>
@@ -34,22 +34,22 @@
 	<modules>
 		<module>cubics-core</module>
 		<module>cubics-renders</module>
-    <module>cubics-tests</module>
-  </modules>
+		<module>cubics-tests</module>
+	</modules>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>anjlab</groupId>
+				<groupId>com.anjlab.cubics</groupId>
 				<artifactId>cubics-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>anjlab</groupId>
+				<groupId>com.anjlab.cubics</groupId>
 				<artifactId>cubics-renders</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>anjlab</groupId>
+				<groupId>com.anjlab.cubics</groupId>
 				<artifactId>cubics-tests</artifactId>
 				<version>${project.version}</version>
 			</dependency>
